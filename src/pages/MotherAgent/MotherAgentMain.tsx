@@ -507,11 +507,11 @@ interface ParasiteHintProps {
 function ParasiteHint({ zh, ccInstalled }: ParasiteHintProps) {
   const tooltip = zh
     ? ccInstalled
-      ? '我是 AI 助手，只有短暂的记忆和娴熟的安装能力，助你在 AI 领域启航。在上方选择器里切到 Claude Code，让它在这里继续和你对话。'
-      : '我是 AI 助手，只有短暂的记忆和娴熟的安装能力，助你在 AI 领域启航。建议安装并配置 Claude Code，让它在这里继续和你对话。'
+      ? '我是 AI 助手，只有短暂的记忆和娴熟的安装能力，助你在 AI 领域启航。如果你的 Claude Code 配好了模型，在右侧选择他继续和你对话。'
+      : '我是 AI 助手，只有短暂的记忆和娴熟的安装能力，助你在 AI 领域启航。建议先安装并为 Claude Code 配置模型，然后在右侧选择他继续和你对话。'
     : ccInstalled
-      ? "I'm an AI assistant — short memory, sharp install skills, here to launch you into AI. Switch to Claude Code in the selector above so it can keep the conversation going right here."
-      : "I'm an AI assistant — short memory, sharp install skills, here to launch you into AI. Install and configure Claude Code so it can keep the conversation going right here.";
+      ? "I'm an AI assistant — short memory, sharp install skills, here to launch you into AI. Once your Claude Code is configured with a model, pick it on the right to keep talking here."
+      : "I'm an AI assistant — short memory, sharp install skills, here to launch you into AI. Install Claude Code and configure a model, then pick it on the right to keep talking here.";
 
   return (
     <span className="group relative inline-flex items-center">
