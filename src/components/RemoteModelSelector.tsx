@@ -154,7 +154,10 @@ export const RemoteModelSelector: React.FC<RemoteModelSelectorProps> = ({
             </div>
           )}
           {extras && extras.length > 0 && models.length > 0 && (
-            <div className="my-1 border-t border-cyber-border/60" />
+            // Solid divider — user feedback: "just need a clear divider"
+            // (no opacity dimming, full border colour) so the boundary
+            // between models and the parasite engine is unambiguous.
+            <div className="my-1 border-t border-cyber-border" />
           )}
           {extras?.map((extra) => {
             const isCurrent = extra.id === currentModelId;

@@ -442,7 +442,11 @@ export function MotherAgentMain() {
                 {
                   id: PARASITE_CLAUDE_ID,
                   name: 'Claude Code',
-                  icon: '/icons/tools/claudecode.svg',
+                  // CLI-style blocky icon — deliberately different from
+                  // claudecode.svg (the Anthropic star logo used by the
+                  // claude-opus-4-* models) so the parasite engine row is
+                  // visually distinct from regular Claude models.
+                  icon: '/icons/tools/claude.svg',
                   disabled: !parasiteAvailable.includes(PARASITE_CLAUDE_ID),
                   disabledLabel:
                     locale === 'zh' || locale === 'zh-Hans' ? '未安装' : 'Not installed',
