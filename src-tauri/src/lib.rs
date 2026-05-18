@@ -7,10 +7,13 @@
 //!
 //!   * `tauri::generate_context!()` resolves `tauri.conf.json`.
 //!   * `include_bytes!("../icons/tray-icon.png")` reads the tray icon.
-//!   * The `include_str!` calls that pull every prompt / install /
-//!     script asset out of `../../docs/api/...` (these files also feed
-//!     echobird.ai/api/..., so they intentionally live in the public
-//!     repository).
+//!   * The `include_str!` calls that pull every PUBLIC install JSON and
+//!     Quick-Action script into the binary at compile time. These files
+//!     live under `../../docs/api/...` because they also feed
+//!     echobird.ai/api/.... Internal-only assets (the Mother Agent
+//!     prompt and hints) are NOT bundled here — they live inside the
+//!     private `echobird_core` crate and are inaccessible from this
+//!     repository or the public site.
 //!
 //! Once those compile-time expansions happen here we register the
 //! bundled-asset table with `echobird_core` and call `echobird_core::run`,
@@ -19,8 +22,6 @@
 use echobird_core::services::bundled_assets::BundledAssets;
 
 static BUNDLED: BundledAssets = BundledAssets {
-    mother_system_prompt: include_str!("../../docs/api/mother/system_prompt.md"),
-    mother_hints_json: include_str!("../../docs/api/mother/hints.json"),
     install_index_json: include_str!("../../docs/api/tools/install/index.json"),
     install_refs: &[
         (
