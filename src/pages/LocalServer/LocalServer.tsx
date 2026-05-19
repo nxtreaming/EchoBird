@@ -861,8 +861,7 @@ export const LocalServerPanel: React.FC = () => {
     if (hasCompleted) rescanModels();
   }, [downloads, rescanModels]);
 
-  // GPU info
-  const [gpuName, setGpuName] = useState<string | null>(null);
+  // GPU info — VRAM size drives runtime defaults, Compute option, and model-card fitness colors
   const [gpuVramGb, setGpuVramGb] = useState(0);
 
   // Local model dirs (mutable copy for add/remove)
@@ -883,7 +882,6 @@ export const LocalServerPanel: React.FC = () => {
       .getGpuInfo()
       .then((info) => {
         if (info) {
-          setGpuName(info.gpuName);
           setGpuVramGb(info.gpuVramGb);
         } else {
           // Auto-detect on first visit
@@ -891,7 +889,6 @@ export const LocalServerPanel: React.FC = () => {
             .detectGpu()
             .then((detected) => {
               if (detected) {
-                setGpuName(detected.gpuName);
                 setGpuVramGb(detected.gpuVramGb);
               }
             })
@@ -1033,11 +1030,10 @@ export const LocalServerPanel: React.FC = () => {
             {t('server.store')}
           </button>
         </div>
-        {/* GPU info badge */}
-        {gpuName && (
-          <span className="text-[10px] text-cyber-text-muted font-mono truncate max-w-[120px]">
-            {gpuName}
-            {gpuVramGb > 0 ? ` ${gpuVramGb}G` : ''}
+        {/* VRAM total — sums across all GPUs (e.g. 4× H100 → 320GB) */}
+        {gpuVramGb > 0 && (
+          <span className="text-[10px] text-cyber-text-muted font-mono">
+            {gpuVramGb}GB
           </span>
         )}
       </div>
