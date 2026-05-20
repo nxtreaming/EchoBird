@@ -235,7 +235,7 @@ function App() {
                                         {is('courses') && 'ACADEMY'}
                                         {is('models') && 'ROSTER'}
                                         {is('apps') && 'STUDIO'}
-                                        {is('myProjects') && 'VIBE'}
+                                        {is('myProjects') && 'VIBE CODING'}
                                         {is('localLlm') && 'RUNTIME'}
                                         {is('mother') && 'AGENT'}
                                         {is('feedback') && 'SUPPORT'}

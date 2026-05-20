@@ -14,29 +14,21 @@ import {
   type MyProject,
   type MyProjectInput,
 } from '../../stores/myProjectsStore';
-import { useToast } from '../../components/Toast';
+import { useToolsStore } from '../../stores/toolsStore';
+import type { LocalTool } from '../../api/types';
 
-// ── Reversi template (bundled at frontend build, written into clipboard
-// when the user clicks "Copy Reversi template"). Identical to
-// tools/reversi/models.json minus the docs field; the only intent is to
-// give a Vibe-Coding starter a complete read/write mapping to crib from. ──
-const REVERSI_MODELS_TEMPLATE = `{
-  "configFile": "~/.echobird/myproject.json",
-  "format": "json",
-  "read": {
-    "model": ["model"],
-    "baseUrl": ["openai.baseUrl", "baseUrl"],
-    "apiKey": ["openai.apiKey", "apiKey"]
-  },
-  "write": {
-    "model": "model",
-    "openai.baseUrl": "baseUrl",
-    "openai.apiKey": "apiKey",
-    "anthropic.baseUrl": "baseUrl",
-    "anthropic.apiKey": "apiKey"
-  }
-}
-`;
+// IDs of the bundled tools we want to surface on this page as built-in
+// sample projects — they ARE the reference Vibe-Coding examples and giving
+// them dedicated cards here saves users from having to jump back to App
+// Manager when authoring their own project.
+const BUILTIN_SAMPLE_IDS = ['reversi', 'translator'] as const;
+
+// Placeholder examples shown inside the file-picker fields when nothing's
+// been chosen yet. Kept in English path style across all locales — the
+// example values themselves are filesystem paths, not translatable copy.
+const PLACEHOLDER_ICON = 'e.g: ~/YourProject/xxx.ico/svg/png';
+const PLACEHOLDER_LAUNCHER = 'e.g: ~/YourProject/xxx.exe';
+const PLACEHOLDER_MODELS = 'e.g: ~/YourProject/models.json';
 
 // ── Card grid + dialog wiring ──
 
@@ -44,6 +36,7 @@ export const MyProjectsMain: React.FC = () => {
   const { t } = useI18n();
   const projects = useMyProjectsStore((s) => s.projects);
   const initStore = useMyProjectsStore((s) => s.init);
+  const detectedTools = useToolsStore((s) => s.detectedTools);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
 
@@ -51,6 +44,13 @@ export const MyProjectsMain: React.FC = () => {
   useEffect(() => {
     initStore();
   }, [initStore]);
+
+  // Pluck the two bundled sample tools out of the scanned tool list so we
+  // can render them as ready-made reference projects above the user's own
+  // entries. Preserves the BUILTIN_SAMPLE_IDS order (reversi first).
+  const sampleTools = BUILTIN_SAMPLE_IDS.map((id) => detectedTools.find((t) => t.id === id)).filter(
+    (t): t is LocalTool => t !== undefined
+  );
 
   const openAdd = () => {
     setEditingId(null);
@@ -67,6 +67,9 @@ export const MyProjectsMain: React.FC = () => {
       {/* Cards grid - Scrolling */}
       <div className="flex-1 overflow-y-auto">
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+          {sampleTools.map((tool) => (
+            <BuiltinSampleCard key={tool.id} tool={tool} />
+          ))}
           {projects.map((p) => (
             <ProjectCard key={p.id} project={p} onEdit={openEdit} />
           ))}
@@ -89,13 +92,57 @@ export const MyProjectsMain: React.FC = () => {
         {t('myProjects.bottomHint')}
       </div>
 
-      {dialogOpen && (
-        <AddProjectDialog
-          editingId={editingId}
-          onClose={closeDialog}
-          templateContent={REVERSI_MODELS_TEMPLATE}
+      {dialogOpen && <AddProjectDialog editingId={editingId} onClose={closeDialog} />}
+    </div>
+  );
+};
+
+// ── Built-in sample card ──
+// Same visual as ProjectCard, but data comes from the scanned tool list
+// (reversi / translator) and there are no delete/edit actions — these are
+// reference samples, not user-owned entries.
+
+const BuiltinSampleCard: React.FC<{ tool: LocalTool }> = ({ tool }) => {
+  const { locale } = useI18n();
+  const displayName =
+    (tool.names &&
+      locale !== 'en' &&
+      (tool.names[locale] ||
+        tool.names[locale.split('-')[0]] ||
+        Object.entries(tool.names).find(([k]) => k.startsWith(locale.split('-')[0]))?.[1])) ||
+    tool.name;
+
+  return (
+    <div className="relative p-5 border border-cyber-border rounded-card bg-cyber-surface flex flex-col min-h-[160px]">
+      <div className="absolute top-4 right-4 w-10 h-10 rounded-lg bg-cyber-elevated flex items-center justify-center overflow-hidden">
+        <img
+          src={`./icons/tools/${tool.id}.svg`}
+          alt=""
+          className="w-7 h-7 object-contain opacity-80"
+          onError={(e) => {
+            (e.currentTarget as HTMLImageElement).style.display = 'none';
+          }}
         />
-      )}
+      </div>
+
+      <h3 className="text-[15px] font-semibold text-cyber-text mb-4 pr-12 truncate">
+        {displayName}
+      </h3>
+
+      <div className="space-y-1.5 text-[12px] text-cyber-text-secondary flex-1">
+        <div className="truncate">
+          <span className="text-cyber-text-muted">模型: </span>
+          <span>{tool.activeModel || '—'}</span>
+        </div>
+        <div className="truncate">
+          <span className="text-cyber-text-muted">应用: </span>
+          <span>{tool.detectedPath || '—'}</span>
+        </div>
+        <div className="truncate">
+          <span className="text-cyber-text-muted">配置: </span>
+          <span>{tool.configPath || '—'}</span>
+        </div>
+      </div>
     </div>
   );
 };
@@ -176,10 +223,8 @@ const ProjectCard: React.FC<{
 const AddProjectDialog: React.FC<{
   editingId: string | null;
   onClose: () => void;
-  templateContent: string;
-}> = ({ editingId, onClose, templateContent }) => {
+}> = ({ editingId, onClose }) => {
   const { t } = useI18n();
-  const { showToast } = useToast();
   const projects = useMyProjectsStore((s) => s.projects);
   const addProject = useMyProjectsStore((s) => s.addProject);
   const updateProject = useMyProjectsStore((s) => s.updateProject);
@@ -211,16 +256,6 @@ const AddProjectDialog: React.FC<{
     },
     []
   );
-
-  const handleCopyTemplate = useCallback(async () => {
-    try {
-      await navigator.clipboard.writeText(templateContent);
-      showToast('success', t('myProjects.templateCopied'));
-    } catch {
-      // Clipboard API can fail on some platforms / contexts — silently no-op
-      // rather than crash the dialog.
-    }
-  }, [templateContent, showToast, t]);
 
   const canSave = name.trim().length > 0 && launcherPath && modelsJsonPath;
 
@@ -284,7 +319,7 @@ const AddProjectDialog: React.FC<{
           <FieldLabel label={t('myProjects.field.icon')}>
             <FilePickerButton
               value={iconPath}
-              placeholder={t('myProjects.pickFile')}
+              placeholder={PLACEHOLDER_ICON}
               onClick={() =>
                 pickFile([{ name: 'Icon', extensions: ['ico', 'svg', 'png'] }], setIconPath)
               }
@@ -294,7 +329,7 @@ const AddProjectDialog: React.FC<{
           <FieldLabel label={t('myProjects.field.launcher')}>
             <FilePickerButton
               value={launcherPath}
-              placeholder={t('myProjects.pickFile')}
+              placeholder={PLACEHOLDER_LAUNCHER}
               onClick={() =>
                 pickFile(
                   // Windows: filter to exe. Other platforms: no filter (let user
@@ -312,20 +347,12 @@ const AddProjectDialog: React.FC<{
           <FieldLabel label={t('myProjects.field.models')}>
             <FilePickerButton
               value={modelsJsonPath}
-              placeholder={t('myProjects.pickFile')}
+              placeholder={PLACEHOLDER_MODELS}
               onClick={() =>
                 pickFile([{ name: 'models.json', extensions: ['json'] }], setModelsJsonPath)
               }
             />
           </FieldLabel>
-
-          <button
-            onClick={handleCopyTemplate}
-            className="w-full text-[12px] text-cyber-text-secondary hover:text-cyber-accent border border-cyber-border hover:border-cyber-accent/40 rounded px-3 py-2 transition-colors flex items-center justify-center gap-2 outline-none"
-          >
-            <Folder size={12} />
-            {t('myProjects.copyTemplate')}
-          </button>
         </div>
 
         <div className="flex border-t border-cyber-border/40">
@@ -361,6 +388,10 @@ const FieldLabel: React.FC<{ label: string; children: React.ReactNode }> = ({
   </div>
 );
 
+// Visually a text input (matches the project-name field above) but acts as a
+// file picker — clicking anywhere on the row opens the OS dialog. Placeholder
+// shows the example path until the user picks something. No hover tooltip:
+// the box itself is the only thing the user looks at.
 const FilePickerButton: React.FC<{
   value: string;
   placeholder: string;
@@ -369,8 +400,7 @@ const FilePickerButton: React.FC<{
   <button
     type="button"
     onClick={onClick}
-    className="w-full px-3 py-2 bg-cyber-input border border-cyber-border rounded text-[13px] text-left flex items-center justify-between gap-2 hover:border-cyber-text/40 transition-colors outline-none"
-    title={value || placeholder}
+    className="w-full px-3 py-2 bg-cyber-input border border-cyber-border rounded text-[14px] text-left flex items-center justify-between gap-2 hover:border-cyber-text/40 transition-colors outline-none"
   >
     <span className={`truncate ${value ? 'text-cyber-text' : 'text-cyber-text-muted'}`}>
       {value || placeholder}
