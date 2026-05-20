@@ -19,6 +19,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Plus, Folder, X } from 'lucide-react';
 import { open as openDialog } from '@tauri-apps/plugin-dialog';
+import { convertFileSrc } from '@tauri-apps/api/core';
 import { useI18n } from '../../hooks/useI18n';
 import * as api from '../../api/tauri';
 import {
@@ -43,15 +44,20 @@ const PLACEHOLDER_LAUNCHER = 'e.g: ~/YourProject/xxx.exe';
 const PLACEHOLDER_MODELS = 'e.g: ~/YourProject/models.json';
 
 // Convert any stored icon path into something the WebView can render.
-//   - Seeded built-ins: "./icons/tools/<id>.svg" — Vite-served, use as-is
-//   - User-picked via plugin-dialog: absolute filesystem path — needs file://
-//   - Empty string: caller falls back to a placeholder glyph
+//   - Seeded built-ins: "./icons/tools/<id>.svg" / "../foo" — Vite-served,
+//     pass through verbatim.
+//   - Web URLs / data URIs: pass through.
+//   - User-picked filesystem path (Windows C:\..., macOS/Linux /...): go
+//     through Tauri's asset protocol via convertFileSrc(). Bare file://
+//     URLs are blocked by the WebView for security; the asset protocol
+//     (enabled in tauri.conf.json's app.security.assetProtocol with a
+//     "**" scope) is the supported way to render local files as <img src>.
+//   - Empty string: caller falls back to a placeholder glyph.
 const iconSrcFor = (p: string): string => {
   if (!p) return '';
-  if (p.startsWith('./') || p.startsWith('/') || /^https?:/.test(p) || p.startsWith('data:')) {
-    return p;
-  }
-  return `file://${p.replace(/\\/g, '/')}`;
+  if (p.startsWith('./') || p.startsWith('../')) return p;
+  if (/^https?:/.test(p) || p.startsWith('data:')) return p;
+  return convertFileSrc(p);
 };
 
 // ── Card grid + dialog wiring ──
