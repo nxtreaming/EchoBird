@@ -167,6 +167,16 @@ interface MyProjectsState {
   /** Whether the user agreed to write into their own config file (mirrors
    *  AppManager.agreedConfigPolicy). */
   userProjectAgreedConfigPolicy: boolean;
+  /** Optimistic per-project record of which model was last clicked to
+   *  apply. Mirrors AppManager's pattern of updating detectedTools[id]
+   *  .activeModel after a successful apply — but for user projects we
+   *  set it the moment the user clicks the button, regardless of whether
+   *  the underlying apply succeeded (silent-failure is the spec; the card
+   *  should still reflect intent). Keyed by project id, value is
+   *  ModelConfig.internalId. Session-only — not persisted; cleared on
+   *  restart since user projects don't have a scanTools equivalent to
+   *  rehydrate from disk. */
+  lastAppliedModelInternalId: Record<string, string>;
   addProject: (input: MyProjectInput) => MyProject;
   updateProject: (id: string, patch: Partial<MyProjectInput>) => void;
   deleteProject: (id: string) => void;
@@ -175,6 +185,7 @@ interface MyProjectsState {
   setUserProjectModelChoice: (projectId: string, modelInternalId: string | null) => void;
   setUserProjectLaunchAfterApply: (v: boolean) => void;
   setUserProjectAgreedConfigPolicy: (v: boolean) => void;
+  setLastAppliedModel: (projectId: string, modelInternalId: string) => void;
   init: () => void;
   /** Idempotent — calls Rust seed_builtin_to_user_dir for each built-in
    *  present in the live tool scan, populating builtinDirs once we have a
@@ -191,6 +202,7 @@ export const useMyProjectsStore = create<MyProjectsState>((set, get) => ({
   userProjectModelChoice: {},
   userProjectLaunchAfterApply: true,
   userProjectAgreedConfigPolicy: true,
+  lastAppliedModelInternalId: {},
   addProject: (input) => {
     const project: MyProject = {
       ...input,
@@ -226,6 +238,13 @@ export const useMyProjectsStore = create<MyProjectsState>((set, get) => ({
     })),
   setUserProjectLaunchAfterApply: (v) => set({ userProjectLaunchAfterApply: v }),
   setUserProjectAgreedConfigPolicy: (v) => set({ userProjectAgreedConfigPolicy: v }),
+  setLastAppliedModel: (projectId, modelInternalId) =>
+    set((s) => ({
+      lastAppliedModelInternalId: {
+        ...s.lastAppliedModelInternalId,
+        [projectId]: modelInternalId,
+      },
+    })),
   init: () => {
     // Migration: strip seeded built-in entries from localStorage. They moved
     // out of user storage when we switched to the two-table model — keeping

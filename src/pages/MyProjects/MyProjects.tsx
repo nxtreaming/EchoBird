@@ -196,14 +196,26 @@ const ProjectToolCard: React.FC<{
   const detectedTools = useToolsStore((s) => s.detectedTools);
   const deleteProject = useMyProjectsStore((s) => s.deleteProject);
   const hideBuiltin = useMyProjectsStore((s) => s.hideBuiltin);
+  const lastAppliedModelInternalId = useMyProjectsStore((s) => s.lastAppliedModelInternalId);
+  const { userModels } = useAppManager();
   const confirm = useConfirm();
 
   // Built-ins read live activeModel off the tool scan so swapping the
-  // model from the right panel updates the card in place. User-only
-  // projects show a dash until Phase D adds models.json read-back.
+  // model from the right panel updates the card in place. User projects
+  // don't appear in the tool scan, so we mirror AppManager's optimistic
+  // pattern via the store's lastAppliedModelInternalId map — populated
+  // on click in MyProjectsBottom regardless of apply outcome.
   const linked = project.linkedToolId
     ? detectedTools.find((tool) => tool.id === project.linkedToolId)
     : undefined;
+  const userActiveModelId = project.linkedToolId
+    ? undefined
+    : lastAppliedModelInternalId[project.id];
+  const userActiveModel = userActiveModelId
+    ? userModels.find((m) => m.internalId === userActiveModelId)
+    : undefined;
+  const activeModelDisplay =
+    linked?.activeModel || userActiveModel?.modelId || userActiveModel?.name;
 
   return (
     <ToolCard
@@ -213,7 +225,7 @@ const ProjectToolCard: React.FC<{
       installed
       detectedPath={project.launcherPath}
       configPath={project.modelsJsonPath}
-      activeModel={linked?.activeModel}
+      activeModel={activeModelDisplay}
       selected={selected}
       onClick={onSelect}
       actions={

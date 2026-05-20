@@ -124,6 +124,7 @@ export const MyProjectsBottom: React.FC = () => {
   const setLaunchAfterApply = useMyProjectsStore((s) => s.setUserProjectLaunchAfterApply);
   const agreedConfigPolicy = useMyProjectsStore((s) => s.userProjectAgreedConfigPolicy);
   const setAgreedConfigPolicy = useMyProjectsStore((s) => s.setUserProjectAgreedConfigPolicy);
+  const setLastAppliedModel = useMyProjectsStore((s) => s.setLastAppliedModel);
   const { userModels } = useAppManager();
 
   const [isLaunching, setIsLaunching] = useState(false);
@@ -148,6 +149,16 @@ export const MyProjectsBottom: React.FC = () => {
   const handleLaunch = async () => {
     if (!project || isLaunching) return;
     setIsLaunching(true);
+
+    // Optimistic card update — mirror AppManager's pattern but fire on
+    // click (before await), not on success. Apply silently fails by spec,
+    // so we can't condition the card on outcome; the user's click IS the
+    // intent, the card should reflect it. Built-in cards still flow
+    // through AppManager and pick up their own optimistic update there.
+    if (chosenModelId) {
+      setLastAppliedModel(project.id, chosenModelId);
+    }
+
     try {
       // 1) Optionally write the 4 model fields flat into the project's
       //    models.json. Silent on every failure — spec; we hand the user
