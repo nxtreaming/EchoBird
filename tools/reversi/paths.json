@@ -7,7 +7,8 @@
     "version": "1.0",
     "description": "AI Reversi - Test your model connection",
     "apiProtocol": [
-        "openai"
+        "openai",
+        "anthropic"
     ],
     "docs": "https://en.wikipedia.org/wiki/Reversi",
     "command": "",
