@@ -216,6 +216,12 @@ const AddProjectDialog: React.FC<{
 
   // Initial values: empty (Add) or existing project (Edit).
   const existing = editingId ? projects.find((p) => p.id === editingId) : null;
+  // Built-in entries (Reversi / Translator) get their launcher + models.json
+  // wired to the bundled paths; editing those fields here wouldn't change
+  // the actual launch (linkedToolId routes to AppManager's HTML flow). Mark
+  // them read-only so the dialog doesn't suggest otherwise. Name + icon
+  // stay editable.
+  const isBuiltin = !!existing?.linkedToolId;
   const [name, setName] = useState(existing?.name ?? '');
   const [iconPath, setIconPath] = useState(existing?.iconPath ?? '');
   const [launcherPath, setLauncherPath] = useState(existing?.launcherPath ?? '');
@@ -333,17 +339,16 @@ const AddProjectDialog: React.FC<{
             <FilePickerButton
               value={launcherPath}
               placeholder={PLACEHOLDER_LAUNCHER}
+              readOnly={isBuiltin}
+              hint={isBuiltin ? t('myProjects.builtinHint') : undefined}
               onClick={() =>
-                pickFile(
-                  // Windows: filter to exe. Other platforms: no filter (let user
-                  // pick any executable — .app bundle on macOS is a directory
-                  // and the dialog handles that natively).
-                  navigator.platform.toLowerCase().includes('win')
-                    ? [{ name: 'Executable', extensions: ['exe'] }]
-                    : [],
-                  setLauncherPath,
-                  launcherPath
-                )
+                // No filter — only Windows uses .exe; macOS apps are .app
+                // bundles (dirs), Linux launchers are arbitrary ELF / shell
+                // scripts / desktop files. Forcing .exe would lock the
+                // feature to one OS, so we let the user pick anything and
+                // accept that an invalid choice fails on launch (their
+                // call).
+                pickFile([], setLauncherPath, launcherPath)
               }
             />
           </FieldLabel>
@@ -352,6 +357,8 @@ const AddProjectDialog: React.FC<{
             <FilePickerButton
               value={modelsJsonPath}
               placeholder={PLACEHOLDER_MODELS}
+              readOnly={isBuiltin}
+              hint={isBuiltin ? t('myProjects.builtinHint') : undefined}
               onClick={() =>
                 pickFile(
                   [{ name: 'models.json', extensions: ['json'] }],
@@ -397,21 +404,44 @@ const FieldLabel: React.FC<{ label: string; children: React.ReactNode }> = ({
 
 // Visually a text input (matches the project-name field above) but acts as a
 // file picker — clicking anywhere on the row opens the OS dialog. Placeholder
-// shows the example path until the user picks something. No hover tooltip:
-// the box itself is the only thing the user looks at.
+// shows the example path until the user picks something. When readOnly is
+// true (built-in entries), the field renders as a non-interactive box: the
+// value is shown for reference, no folder icon, no click handler — Reversi /
+// Translator's launcher + models.json live in the bundle and editing them
+// here would just be misleading (the actual launch flow is hardcoded to
+// AppManager's built-in path).
 const FilePickerButton: React.FC<{
   value: string;
   placeholder: string;
   onClick: () => void;
-}> = ({ value, placeholder, onClick }) => (
-  <button
-    type="button"
-    onClick={onClick}
-    className="w-full px-3 py-2 bg-cyber-input border border-cyber-border rounded text-[14px] text-left flex items-center justify-between gap-2 hover:border-cyber-text/40 transition-colors outline-none"
-  >
-    <span className={`truncate ${value ? 'text-cyber-text' : 'text-cyber-text-muted'}`}>
-      {value || placeholder}
-    </span>
-    <Folder size={14} className="flex-shrink-0 text-cyber-text-secondary" />
-  </button>
-);
+  readOnly?: boolean;
+  hint?: string;
+}> = ({ value, placeholder, onClick, readOnly, hint }) => {
+  if (readOnly) {
+    return (
+      <div
+        className="w-full px-3 py-2 bg-cyber-input/40 border border-cyber-border/60 rounded text-[14px] text-left flex items-center justify-between gap-2 cursor-not-allowed"
+        title={value || placeholder}
+      >
+        <span className="truncate text-cyber-text-muted">{value || placeholder}</span>
+        {hint && (
+          <span className="text-[11px] font-mono text-cyber-text-muted/70 flex-shrink-0">
+            ({hint})
+          </span>
+        )}
+      </div>
+    );
+  }
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="w-full px-3 py-2 bg-cyber-input border border-cyber-border rounded text-[14px] text-left flex items-center justify-between gap-2 hover:border-cyber-text/40 transition-colors outline-none"
+    >
+      <span className={`truncate ${value ? 'text-cyber-text' : 'text-cyber-text-muted'}`}>
+        {value || placeholder}
+      </span>
+      <Folder size={14} className="flex-shrink-0 text-cyber-text-secondary" />
+    </button>
+  );
+};

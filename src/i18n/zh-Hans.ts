@@ -29,6 +29,7 @@ const zhHans: Partial<Translations> = {
   'myProjects.pickFile': '(点击选择)',
   'myProjects.copyTemplate': '复制 Reversi 模板到剪贴板',
   'myProjects.templateCopied': '模板已复制,粘贴到你项目的 models.json',
+  'myProjects.builtinHint': '内置',
   'myProjects.deleteTitle': '从列表移除',
   'myProjects.deleteConfirm': '仅从「我的AI项目」列表移除该项目,本机上的项目文件不会被删除。',
   'myProjects.bottomHint':
