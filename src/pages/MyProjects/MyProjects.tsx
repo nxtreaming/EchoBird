@@ -214,14 +214,13 @@ const AddProjectDialog: React.FC<{
   const addProject = useMyProjectsStore((s) => s.addProject);
   const updateProject = useMyProjectsStore((s) => s.updateProject);
 
-  // Initial values: empty (Add) or existing project (Edit).
+  // Initial values: empty (Add) or existing project (Edit). All fields are
+  // editable for every entry — including seeded built-ins. The seeded
+  // Reversi / Translator paths point at *reference copies* in
+  // ~/.echobird/<id>/, not at the bundle EchoBird actually launches, so
+  // edits here are harmless: the launch flow still routes via linkedToolId
+  // to the original bundle.
   const existing = editingId ? projects.find((p) => p.id === editingId) : null;
-  // Built-in entries (Reversi / Translator) get their launcher + models.json
-  // wired to the bundled paths; editing those fields here wouldn't change
-  // the actual launch (linkedToolId routes to AppManager's HTML flow). Mark
-  // them read-only so the dialog doesn't suggest otherwise. Name + icon
-  // stay editable.
-  const isBuiltin = !!existing?.linkedToolId;
   const [name, setName] = useState(existing?.name ?? '');
   const [iconPath, setIconPath] = useState(existing?.iconPath ?? '');
   const [launcherPath, setLauncherPath] = useState(existing?.launcherPath ?? '');
@@ -339,8 +338,6 @@ const AddProjectDialog: React.FC<{
             <FilePickerButton
               value={launcherPath}
               placeholder={PLACEHOLDER_LAUNCHER}
-              readOnly={isBuiltin}
-              hint={isBuiltin ? t('myProjects.builtinHint') : undefined}
               onClick={() =>
                 // No filter — only Windows uses .exe; macOS apps are .app
                 // bundles (dirs), Linux launchers are arbitrary ELF / shell
@@ -357,8 +354,6 @@ const AddProjectDialog: React.FC<{
             <FilePickerButton
               value={modelsJsonPath}
               placeholder={PLACEHOLDER_MODELS}
-              readOnly={isBuiltin}
-              hint={isBuiltin ? t('myProjects.builtinHint') : undefined}
               onClick={() =>
                 pickFile(
                   [{ name: 'models.json', extensions: ['json'] }],

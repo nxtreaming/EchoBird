@@ -32,7 +32,6 @@ const en: Translations = {
   'myProjects.pickFile': '(click to choose)',
   'myProjects.copyTemplate': 'Copy Reversi models.json template',
   'myProjects.templateCopied': 'models.json template copied to clipboard',
-  'myProjects.builtinHint': 'built-in',
   'myProjects.deleteTitle': 'Remove from list',
   'myProjects.deleteConfirm':
     'Removes this entry from your "My AI Projects" list only — the project files on your machine stay where they are.',

@@ -12,6 +12,7 @@
 // without changing the public API of this store.
 import { create } from 'zustand';
 import type { LocalTool } from '../api/types';
+import * as api from '../api/tauri';
 
 export interface MyProject {
   id: string;
@@ -39,16 +40,14 @@ export type MyProjectInput = Omit<MyProject, 'id' | 'createdAt'>;
 const LS_KEY = 'echobird_my_projects';
 const SEED_FLAG_KEY = 'echobird_my_projects_seeded';
 
-// Build the bundled models.json path for a seeded tool. tool.detectedPath
-// is the tool dir (e.g. E:\EchoBird\tools\reversi); we append models.json
-// using whichever separator the path already speaks. The result is what
-// users reference as "the schema file" — same file shipped at
-// tools/<id>/models.json in the public repo.
-const modelsJsonPathFor = (toolDir: string): string => {
-  if (!toolDir) return '';
-  const trimmed = toolDir.replace(/[\\/]$/, '');
+// Append a filename to a directory path using whichever separator the
+// directory already speaks (Windows-style backslashes if the path looks
+// like Windows, forward slashes otherwise).
+const joinPath = (dir: string, file: string): string => {
+  if (!dir) return '';
+  const trimmed = dir.replace(/[\\/]$/, '');
   const sep = trimmed.includes('\\') ? '\\' : '/';
-  return `${trimmed}${sep}models.json`;
+  return `${trimmed}${sep}${file}`;
 };
 
 // Bundled tools we drop into the project list on the user's first visit.
@@ -114,11 +113,13 @@ interface MyProjectsState {
   deleteProject: (id: string) => void;
   init: () => void;
   /** Idempotent — only runs once per device (tracks a localStorage flag).
-   *  Pass the live tool-scan results so we can grab the real bundled paths
-   *  (.../tools/reversi/, ~/.echobird/reversi.json) at seed time. Returns
-   *  silently without seeding if the scan hasn't surfaced the built-ins yet
-   *  (page will call again on the next render once detectedTools updates). */
-  seedBuiltins: (tools: LocalTool[], locale: string) => void;
+   *  Pass the live tool-scan results so we can confirm the built-ins are
+   *  scanned before seeding (we don't actually need their paths anymore —
+   *  the Rust `seed_builtin_to_user_dir` command copies files from the
+   *  bundle into the user's home and returns the destination directory).
+   *  Returns silently without seeding if the scan hasn't surfaced the
+   *  built-ins yet; page will call again on the next render. */
+  seedBuiltins: (tools: LocalTool[], locale: string) => Promise<void>;
 }
 
 export const useMyProjectsStore = create<MyProjectsState>((set, get) => ({
@@ -147,47 +148,44 @@ export const useMyProjectsStore = create<MyProjectsState>((set, get) => ({
   init: () => {
     set({ projects: loadFromStorage() });
   },
-  seedBuiltins: (tools, locale) => {
-    // ── Migration: earlier seed runs (before v2) stored the runtime config
-    // file (~/.echobird/<id>.json) in `modelsJsonPath`. The field is meant
-    // for the schema file the user studies, which lives at
-    // <tool_dir>/models.json. Rewrite any seeded entry that still has the
-    // old wrong path. Cheap and idempotent — runs every time but only
-    // touches store when something actually changes.
-    const before = get().projects;
-    const migrated = before.map((p) => {
-      if (!p.linkedToolId) return p;
-      if (p.modelsJsonPath.endsWith('models.json')) return p;
-      const tool = tools.find((tt) => tt.id === p.linkedToolId);
-      if (!tool?.detectedPath) return p;
-      return { ...p, modelsJsonPath: modelsJsonPathFor(tool.detectedPath) };
-    });
-    if (migrated.some((p, i) => p !== before[i])) {
-      saveToStorage(migrated);
-      set({ projects: migrated });
-    }
-
-    // ── First-run seed
+  seedBuiltins: async (tools, locale) => {
+    // First-run seed only. Once the flag is set, this is a no-op — even if
+    // the user deleted Reversi from the list. (Deleted entries can be
+    // brought back by clearing the flag manually; resurrecting them every
+    // launch would override the user's explicit delete.)
     if (localStorage.getItem(SEED_FLAG_KEY) === '1') return;
+
+    // Need at least one of each seed tool present in the scan before we run.
+    // Pre-tool-scan renders should be a no-op so we can retry next render.
+    const presentIds = SEED_TOOL_IDS.filter((id) => tools.some((t) => t.id === id));
+    if (presentIds.length < SEED_TOOL_IDS.length) return;
 
     const seeded: MyProject[] = [];
     for (const id of SEED_TOOL_IDS) {
-      const tool = tools.find((t) => t.id === id);
-      if (!tool) continue; // tool scan not done yet for this one
+      const tool = tools.find((t) => t.id === id)!;
+      let userDir: string;
+      try {
+        // Rust copies the bundle (paths.json, models.json, game.html, <id>.svg,
+        // README.txt) to ~/.echobird/<id>/ and returns the absolute dest path.
+        // Files that already exist are NOT overwritten — respects any prior
+        // edits the user made before deleting / re-seeding.
+        userDir = await api.seedBuiltinToUserDir(id);
+      } catch (e) {
+        console.error(`[MyProjects] Failed to seed ${id}:`, e);
+        // Abort the whole seed — partial seeding would leave the page in a
+        // half-baked state. User can try again on next launch.
+        return;
+      }
       seeded.push({
         id: `builtin-${id}-${Math.random().toString(36).slice(2, 8)}`,
         name: pickToolName(tool, locale),
-        iconPath: `./icons/tools/${id}.svg`,
-        launcherPath: tool.detectedPath || '',
-        modelsJsonPath: modelsJsonPathFor(tool.detectedPath || ''),
+        iconPath: joinPath(userDir, `${id}.svg`),
+        launcherPath: joinPath(userDir, 'game.html'),
+        modelsJsonPath: joinPath(userDir, 'models.json'),
         createdAt: Date.now(),
         linkedToolId: id,
       });
     }
-
-    // Wait for ALL seeds to be resolvable before flipping the flag — this lets
-    // us re-attempt on later renders if e.g. only reversi was loaded first.
-    if (seeded.length < SEED_TOOL_IDS.length) return;
 
     const next = [...seeded, ...get().projects];
     saveToStorage(next);

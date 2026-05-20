@@ -31,7 +31,6 @@ const zhHant: Partial<Translations> = {
   'myProjects.pickFile': '(點擊選擇)',
   'myProjects.copyTemplate': '複製 Reversi 範本到剪貼簿',
   'myProjects.templateCopied': '範本已複製,貼到你專案的 models.json',
-  'myProjects.builtinHint': '內建',
   'myProjects.deleteTitle': '從列表移除',
   'myProjects.deleteConfirm': '僅從「我的AI項目」列表移除該項目,本機上的項目檔案不會被刪除。',
   'myProjects.bottomHint':

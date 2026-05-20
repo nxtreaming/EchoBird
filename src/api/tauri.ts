@@ -94,6 +94,14 @@ export async function launchGame(
   return invoke('launch_game', { toolId, launchFile, modelConfig: modelConfig || null });
 }
 
+/// Copy a built-in tool's reference files (paths.json, models.json,
+/// game.html, <id>.svg, README.txt) to ~/.echobird/<id>/ for the "我的AI
+/// 项目" page. Idempotent — files the user already has are left alone.
+/// Returns the absolute destination directory path.
+export async function seedBuiltinToUserDir(toolId: string): Promise<string> {
+  return invoke<string>('seed_builtin_to_user_dir', { toolId });
+}
+
 // ─── Window APIs (Tauri built-in) ───
 
 export { getCurrentWindow } from '@tauri-apps/api/window';

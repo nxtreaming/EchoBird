@@ -31,7 +31,6 @@ const ja: Partial<Translations> = {
   'myProjects.pickFile': '(クリックして選択)',
   'myProjects.copyTemplate': 'Reversi の models.json テンプレートをコピー',
   'myProjects.templateCopied': 'クリップボードにコピーしました — models.json に貼り付けてください',
-  'myProjects.builtinHint': '組み込み',
   'myProjects.deleteTitle': 'リストから削除',
   'myProjects.deleteConfirm':
     '「マイ AI プロジェクト」リストから削除するだけで、ローカルのプロジェクトファイル自体は削除されません。',
