@@ -38,14 +38,14 @@
     },
     {
       "id": "cn-bilibili-qiuzhi-claude-code",
-      "name": "秋芝 · 全面掌握 Claude Code 保姆教学",
+      "name": "全面掌握 Claude Code",
       "url": "https://www.bilibili.com/video/BV1NvRyBzEhq/",
       "description": "B 站 UP 主秋芝出品,从安装到高级用法一次讲全的 Claude Code 保姆级教程",
       "category": "AI 编程"
     },
     {
       "id": "cn-bilibili-qiuzhi-codex",
-      "name": "秋芝 · Codex 零基础保姆教程",
+      "name": "Codex 零基础保姆教程",
       "url": "https://www.bilibili.com/video/BV1Nd596vEyU/",
       "description": "B 站 UP 主秋芝出品,10 个实战场景带你从 0 拉通 Codex 全流程",
       "category": "AI 编程"
