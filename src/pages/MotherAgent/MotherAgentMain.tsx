@@ -437,7 +437,11 @@ export function MotherAgentMain() {
               onSelect={(id) => {
                 const currentId = parasiteAgent || agentModel;
                 if (currentId && id && id !== currentId) {
-                  showToast('success', t('mother.switchEngineHint'));
+                  showToast(
+                    'success',
+                    t('mother.switchEngineHintReason'),
+                    t('mother.switchEngineHint')
+                  );
                 }
                 if (id === PARASITE_CLAUDE_ID) {
                   // Switch to parasite mode. Intentionally don't clear

@@ -248,7 +248,8 @@ const zhHans: Partial<Translations> = {
     '我是 AI 助手，只有短暂的记忆和娴熟的安装能力，助你在 AI 领域启航。如果你的 Claude Code 配好了模型，在右侧选择它继续和你对话。',
   'mother.parasiteTipNotInstalled':
     '我是 AI 助手，只有短暂的记忆和娴熟的安装能力，助你在 AI 领域启航。建议先安装并为 Claude Code 配置模型，然后在右侧选择它继续和你对话。',
-  'mother.switchEngineHint': '切换后建议清理对话记录，避免上下文不兼容导致报错',
+  'mother.switchEngineHint': '切换后建议清理对话记录',
+  'mother.switchEngineHintReason': '避免上下文不兼容导致报错',
   'terminal.thinking': '思考中',
   'ssh.winNote':
     'Windows 部署 SSH 较为复杂。建议在服务器端下载安装 EchoBird，然后通过"安装与修复"部署本机 SSH。',

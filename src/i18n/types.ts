@@ -242,6 +242,7 @@ export type TKey =
   | 'mother.parasiteTipNotInstalled'
   // Toast shown when user switches model or Claude Code mid-chat
   | 'mother.switchEngineHint'
+  | 'mother.switchEngineHintReason'
   // Terminal status bar
   | 'terminal.thinking'
   // SSH Guide

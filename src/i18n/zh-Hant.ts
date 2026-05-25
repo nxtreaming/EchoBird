@@ -250,7 +250,8 @@ const zhHant: Partial<Translations> = {
     '我是 AI 助手，只有短暫的記憶和嫻熟的安裝能力，助你在 AI 領域啟航。如果你的 Claude Code 配好了模型，在右側選擇它繼續和你對話。',
   'mother.parasiteTipNotInstalled':
     '我是 AI 助手，只有短暫的記憶和嫻熟的安裝能力，助你在 AI 領域啟航。建議先安裝並為 Claude Code 設定模型，然後在右側選擇它繼續和你對話。',
-  'mother.switchEngineHint': '切換後建議清理對話記錄，避免上下文不相容導致報錯',
+  'mother.switchEngineHint': '切換後建議清理對話記錄',
+  'mother.switchEngineHintReason': '避免上下文不相容導致報錯',
   'terminal.thinking': '思考中',
   'ssh.winNote':
     'Windows 部署 SSH 較為複雜。建議在伺服器端下載安裝 EchoBird，然後透過「安裝與修復」部署本機 SSH。',

@@ -255,8 +255,8 @@ const ja: Partial<Translations> = {
     'AI アシスタントです。短い記憶と確かなインストール能力で、AI の世界へのスタートをお手伝いします。Claude Code にモデルを設定済みであれば、右側で選択すると会話を続けられます。',
   'mother.parasiteTipNotInstalled':
     'AI アシスタントです。短い記憶と確かなインストール能力で、AI の世界へのスタートをお手伝いします。まず Claude Code をインストールしてモデルを設定し、その後右側で選択して会話を続けてください。',
-  'mother.switchEngineHint':
-    '切り替え後はチャット履歴のクリアを推奨します（不整合によるエラー回避）',
+  'mother.switchEngineHint': '切り替え後はチャット履歴のクリアを推奨します',
+  'mother.switchEngineHintReason': '不整合によるエラーを回避できます',
   'terminal.thinking': '思考中',
   'ssh.winNote':
     'Windows での SSH 展開は Linux / macOS より複雑です。サーバー側に EchoBird を先にインストールし、「インストール & 修復」から SSH を設定するのを推奨します。',
