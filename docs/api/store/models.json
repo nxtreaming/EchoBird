@@ -63,27 +63,33 @@
   },
   {
     "id": "qwen3.6-35b-a3b-opus-4.7-distill",
-    "name": "Qwen3.6 35B-A3B Opus 4.7 Distill (MoE)",
+    "name": "Qwen3.6 35B-A3B Opus 4.7 Distill MTP (MoE)",
     "icon": "qwen",
-    "description": "Qwen3.6 MoE distilled from Claude Opus 4.7 — APEX quants by the LocalAI team. Experimental: teacher is Anthropic API output",
-    "huggingfaceRepo": "mudler/Qwen3.6-35B-A3B-Claude-4.7-Opus-Reasoning-Distilled-APEX-GGUF",
+    "description": "Qwen3.6 MoE distilled from Claude Opus 4.7 — APEX-MTP quants by the LocalAI team. Bundled MTP draft head enables self-speculative decoding (~1.5-2× tps) via llama-server --draft-mtp",
+    "huggingfaceRepo": "mudler/Qwen3.6-35B-A3B-Claude-4.7-Opus-Reasoning-Distilled-APEX-MTP-GGUF",
     "variants": [
       {
+        "quantization": "I-Nano",
+        "fileName": "Qwen3.6-35B-A3B-Claude-4.7-Opus-Reasoning-Distilled-APEX-MTP-I-Nano.gguf",
+        "fileSize": 11686646144,
+        "recommendedVRAM": "14 GB"
+      },
+      {
         "quantization": "I-Compact",
-        "fileName": "Qwen3.6-35B-A3B-Claude-4.7-Opus-Reasoning-Distilled-APEX-I-Compact.gguf",
-        "fileSize": 17293089856,
+        "fileName": "Qwen3.6-35B-A3B-Claude-4.7-Opus-Reasoning-Distilled-APEX-MTP-I-Compact.gguf",
+        "fileSize": 17329854848,
         "recommendedVRAM": "20 GB"
       },
       {
         "quantization": "I-Quality",
-        "fileName": "Qwen3.6-35B-A3B-Claude-4.7-Opus-Reasoning-Distilled-APEX-I-Quality.gguf",
-        "fileSize": 22819402816,
+        "fileName": "Qwen3.6-35B-A3B-Claude-4.7-Opus-Reasoning-Distilled-APEX-MTP-I-Quality.gguf",
+        "fileSize": 23484576128,
         "recommendedVRAM": "24 GB"
       },
       {
         "quantization": "I-Balanced",
-        "fileName": "Qwen3.6-35B-A3B-Claude-4.7-Opus-Reasoning-Distilled-APEX-I-Balanced.gguf",
-        "fileSize": 25624958016,
+        "fileName": "Qwen3.6-35B-A3B-Claude-4.7-Opus-Reasoning-Distilled-APEX-MTP-I-Balanced.gguf",
+        "fileSize": 26059444608,
         "recommendedVRAM": "32 GB"
       }
     ],
