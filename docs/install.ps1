@@ -79,16 +79,17 @@ foreach ($path in $regPaths) {
     }
 }
 
-# Empty `version` = the Windows asset isn't out yet (CI probably still
-# building for a just-tagged release). Show a friendly "come back later"
-# message and pause so the window doesn't auto-close before the user
-# can read it (some launch flows spawn a fresh PowerShell that exits
-# the moment the script returns).
+# Both lookups failed. We don't speculate about *why* — the old "installer
+# still uploading" message was misleading because release.yml uploads
+# every asset before the draft release even exists, so by the time
+# api.github.com returns a tag, the Windows installer is already there.
+# What actually fails at this point is network reachability (firewall /
+# DNS / regional block) — say so honestly and link the manual fallback.
 if (-not $latestVer) {
     Write-Host ""
-    Write-Host "  A new version of EchoBird was just released." -ForegroundColor Yellow
-    Write-Host "  The Windows installer is still uploading to GitHub." -ForegroundColor Yellow
-    Write-Host "  Please try again in about 10 minutes." -ForegroundColor Yellow
+    Write-Host "  Could not reach api.github.com or echobird.ai." -ForegroundColor Red
+    Write-Host "  Check your network / firewall and retry, or download manually:" -ForegroundColor Yellow
+    Write-Host "    https://github.com/edison7009/EchoBird/releases/latest" -ForegroundColor Yellow
     Write-Host ""
     if ($installedVer) {
         Write-Host "  Your current v$installedVer stays installed." -ForegroundColor Gray

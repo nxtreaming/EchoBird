@@ -158,22 +158,23 @@ if [ -z "$LATEST_VER" ]; then
   exit 1
 fi
 
-# Empty download URL = our platform's asset isn't out yet (mid-CI for a
-# just-tagged release: Linux runner usually finishes first, mac/Win take
-# longer, then rename-assets runs). Show "come back later" instead of
-# advertising a version we can't deliver.
-if [ -z "$LATEST_VER" ] || [ -z "$DOWNLOAD_URL" ]; then
+# Got a version but no matching asset URL. The old copy here said "still
+# uploading, try in 10 min" — but release.yml uploads every asset BEFORE
+# the draft release exists, so by the time the API reports a tag, all
+# assets are already in place. A missing asset means either the release
+# genuinely doesn't have one for this platform (CI matrix dropped it)
+# or our grep pattern fell out of sync with the rename-assets job.
+if [ -z "$DOWNLOAD_URL" ]; then
   echo ""
-  echo "  ${YELLOW}A new version of EchoBird was just released.${RESET}"
-  echo "  ${YELLOW}The ${PLATFORM} installer is still uploading to GitHub.${RESET}"
-  echo "  ${YELLOW}Please try again in about 10 minutes.${RESET}"
+  echo "  ${RED}No ${PLATFORM} installer found in v${LATEST_VER}.${RESET}"
+  echo "  ${YELLOW}Browse all assets: https://github.com/edison7009/EchoBird/releases/tag/v${LATEST_VER}${RESET}"
   echo ""
   if [ -r /dev/tty ]; then
     printf "  ${GRAY}Press Enter to close...${RESET}"
     read _ < /dev/tty
     echo ""
   fi
-  exit 0
+  exit 1
 fi
 
 echo "  ${GREEN}Latest    : v$LATEST_VER${RESET}"
