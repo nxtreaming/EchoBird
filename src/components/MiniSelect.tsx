@@ -72,7 +72,7 @@ export const MiniSelect: React.FC<MiniSelectProps> = ({
 
       {isOpen && (
         <div
-          className={`absolute ${dropUp ? 'bottom-full mb-px' : 'top-full mt-px'} left-0 right-0 bg-cyber-elevated border ${accentDropdownBorder} max-h-52 overflow-y-auto z-50 rounded-button shadow-lg`}
+          className={`absolute ${dropUp ? 'bottom-full mb-px' : 'top-full mt-px'} left-0 right-0 bg-cyber-elevated border ${accentDropdownBorder} max-h-80 overflow-y-auto z-50 rounded-button shadow-lg`}
         >
           {options.map((option) => (
             <div
