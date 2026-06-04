@@ -1,5 +1,5 @@
 {
-  "version": "5.1.8",
-  "releaseDate": "2026-06-03",
+  "version": "5.1.9",
+  "releaseDate": "2026-06-04",
   "releaseNotes": "## 中文\n\n**本次更新**\n- 新增「Responses」开关：MiniMax-M3、Qwen3.7 等支持 Responses 协议的新模型，可原生接入 Codex，尽享丝滑体验\n\n## English\n\n**What's new**\n- New — Responses toggle: models that natively speak the Responses protocol (MiniMax-M3, Qwen3.7, and more) now connect to Codex natively for a smoother experience\n\n## 日本語\n\n**今回のアップデート**\n- 新登場「Responses」スイッチ：Responses プロトコルに対応したモデル（MiniMax-M3、Qwen3.7 など）を Codex にネイティブ接続し、より滑らかな体験を"
 }
